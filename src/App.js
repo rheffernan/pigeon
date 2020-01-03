@@ -2,92 +2,92 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-import { connect } from 'react-redux'
-import { Provider } from 'react-redux'
+import { connect, useSelector, useDispatch } from 'react-redux'
 
-import { createStore } from 'redux'
+//import { createStore, combineReducers } from 'redux'
 
 
 //import { increment, decrement, reset } from './actionCreators'
 
-function counter(state = 0, action) {
-  switch (action.type) {
-    case 'INCREMENT':
-      return state + 1
-    case 'DECREMENT':
-      return state - 1
-    default:
-      return state
-  }
-}
-// Create a Redux store holding the state of your app.
-// Its API is { subscribe, dispatch, getState }.
-let store = createStore(counter)
+const increment = () => { return { type: "INCREMENT"} };
+const incrementAge = () => { return { type: "INCREMENTAGE"} };
+const decrement = () => { return { type: "DECREMENT"} };
 
-store.subscribe(() => console.log(store.getState()))
-// The only way to mutate the internal state is to dispatch an action.
-// The actions can be serialized, logged or stored and later replayed.
-store.dispatch({ type: 'INCREMENT' })
-// 1
-store.dispatch({ type: 'INCREMENT' })
-// 2
-store.dispatch({ type: 'DECREMENT' })
+export const NewComment = () => {
+   
+   const counterValue = useSelector(state => state.counter);
+   const ageValue = useSelector(state => state.age);
+   const dispatch = useDispatch();
 
+   console.log("rendering NewComment: " + counterValue);
 
-class NewComment extends React.Component {
-  input = null
-  
-  writeComment = evt => {
-    evt.preventDefault();
-    const comment = this.input.value;
-    comment && this.props.dispatch({ type: 'INCREMENT', comment });
-  }
-  
-  render() {
-    const counterValue = this.props.store.getState();
-    return (
+   return (
       <div>
-        <input type="text" value={this.counterValue}  placeholder="Write a comment" />
-        <button type="button" onClick={this.writeComment}>Submit Comment</button>
+        <input type="text" value={counterValue + ageValue}  placeholder="Write a comment" />
+        <button onClick = { () =>  dispatch({type: "INCREMENT"})} >test</button>
       </div>
     )
-  }
-  
 }
 
 
-function CommentsApp(props) {
-  return <NewComment store={store} />
+const mapStateToProps = (state) => {
+   return { currval : state.counter };
+};
+
+function mapDispatchToProps(dispatch) {
+   return {
+      //incrementFunc: () => dispatch(increment()), 
+      incrementFunc: () => dispatch({type: "INCREMENT"}), 
+      incrementAgeFunc: () => dispatch({type: "INCREMENTAGE"}), 
+      decrementFunc: () => dispatch(decrement())
+   }
+}
+
+/*
+const mapDispatchToProps = () => {
+   return {
+      //incrementFunc: () => dispatch(increment()), 
+      incrementFunc: increment,
+      decrementFunc: decrement
+   }
+}
+*/
+
+class App extends React.Component {
+
+
+   render()   {
+          console.log("re-rendering app with props: " + JSON.stringify(this.props));
+	  return (
+	    <div className="App">
+	      <header className="App-header">
+		
+		<img src={logo} className="App-logo" alt="logo" />
+		<NewComment />
+                
+		<button  onClick={ (evt) => {console.log(JSON.stringify(this.props))}}  >Increment</button>
+		<button  onClick={ (evt) => { this.props.incrementFunc()} }  >Increment</button>
+		<button  onClick={ () => this.props.decrementFunc() }  >Decrement</button>
+		<button  onClick={ () => this.props.incrementAgeFunc() }  >Increment Age</button>
+		<input id="ina" value={this.props.currval} /> 
+		<input id="inb" value={this.props.currval} /> 
+		<p>
+		  Edit <code>src/App.js</code> and save to reload.
+		</p>
+		<a
+		  className="App-link" href="https://reactjs.org"
+		  target="_blank"
+		  rel="noopener noreferrer"
+		>
+		  Learn React
+		</a>
+	      </header>
+	    </div>
+	  )
+   }
 }
 
 
-function App() {
-  return (
-    <Provider store={store}>   
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <CommentsApp />
-        <button  onClick={() => {
-           store.dispatch({ type: 'INCREMENT' }) }}  >Increment</button>
-        <input id="ina" defaultValue={store.getState()} /> 
-        connect()(ina)
-        connect()(CommentsApp)
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-    </Provider>
-  );
-}
+export default connect(mapStateToProps, mapDispatchToProps)(App);
+//export default connect(mapStateToProps)(App);
 
-export default App;
